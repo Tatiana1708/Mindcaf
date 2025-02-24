@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.submission-card {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.personal-info, .contact-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.location-info, .request-details {
+  margin: 15px 0;
+}
+
+.meta-data {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.documents ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.documents a {
+  color: #2196F3;
+  text-decoration: none;
+}

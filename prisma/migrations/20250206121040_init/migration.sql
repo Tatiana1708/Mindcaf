@@ -1,0 +1,89 @@
+/*
+  Warnings:
+
+  - You are about to drop the `employees` table. If the table is not empty, all the data it contains will be lost.
+
+*/
+-- DropTable
+DROP TABLE `employees`;
+
+-- CreateTable
+CREATE TABLE `Employee` (
+    `id` VARCHAR(191) NOT NULL,
+    `matricule` VARCHAR(191) NOT NULL,
+    `nom` VARCHAR(191) NOT NULL,
+    `dateNaissance` VARCHAR(191) NOT NULL,
+    `lieuNaissance` VARCHAR(191) NOT NULL,
+    `sexe` VARCHAR(191) NOT NULL,
+    `matrimoniale` VARCHAR(191) NOT NULL,
+    `diplome` VARCHAR(191) NOT NULL,
+    `contrat` VARCHAR(191) NOT NULL,
+    `statutPro` VARCHAR(191) NOT NULL,
+    `grade` VARCHAR(191) NOT NULL,
+    `corpsMetier` VARCHAR(191) NOT NULL,
+    `competences` VARCHAR(191) NOT NULL,
+    `infosSupp` VARCHAR(191) NOT NULL,
+    `position` VARCHAR(191) NOT NULL,
+    `service` ENUM('BUREAU_DU_COURRIER', 'RECETTE_DEPARTEMENTALE_DES_DOMAINES', 'CONSERVATION_FONCIERE', 'SERVICE_DEPARTEMENTAL_DES_DOMAINES', 'SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES', 'SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT', 'SERVICE_DEPARTEMENTAL_DU_CADASTRE', 'AUTRES_SERVICES', 'SECTION_PUBLIC') NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Employee_matricule_key`(`matricule`),
+    UNIQUE INDEX `Employee_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Equipment` (
+    `id` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `service` ENUM('BUREAU_DU_COURRIER', 'RECETTE_DEPARTEMENTALE_DES_DOMAINES', 'CONSERVATION_FONCIERE', 'SERVICE_DEPARTEMENTAL_DES_DOMAINES', 'SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES', 'SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT', 'SERVICE_DEPARTEMENTAL_DU_CADASTRE', 'AUTRES_SERVICES', 'SECTION_PUBLIC') NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `employeeId` VARCHAR(191) NULL,
+    `nombre` VARCHAR(191) NOT NULL,
+    `dateInstall` VARCHAR(191) NOT NULL,
+    `etatBien` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Equipment_code_key`(`code`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Procedure` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `service` ENUM('BUREAU_DU_COURRIER', 'RECETTE_DEPARTEMENTALE_DES_DOMAINES', 'CONSERVATION_FONCIERE', 'SERVICE_DEPARTEMENTAL_DES_DOMAINES', 'SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES', 'SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT', 'SERVICE_DEPARTEMENTAL_DU_CADASTRE', 'AUTRES_SERVICES', 'SECTION_PUBLIC') NOT NULL,
+    `steps` JSON NOT NULL,
+    `lastUpdated` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Notification` (
+    `id` VARCHAR(191) NOT NULL,
+    `procedureId` VARCHAR(191) NOT NULL,
+    `procedureTitle` VARCHAR(191) NOT NULL,
+    `requesterName` VARCHAR(191) NOT NULL,
+    `requesterEmail` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `message` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Equipment` ADD CONSTRAINT `Equipment_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Notification` ADD CONSTRAINT `Notification_procedureId_fkey` FOREIGN KEY (`procedureId`) REFERENCES `Procedure`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
