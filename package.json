@@ -43,7 +43,8 @@
     "react-router-dom": "^6.22.3",
     "socket.io-client": "^4.8.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vite": "^6.2.0"
   },
   "prisma": {
     "seed": "npx ts-node prisma/seed.ts"

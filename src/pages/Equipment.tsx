@@ -35,42 +35,19 @@ const EquipmentPage = () => {
     fetchEquipment();
   }, []);
 
-  // const departments: Service[] = [
-  //   "Bureau du Courrier",
-  //   "Recette Départementale des Domaines",
-  //   "Conservation Foncière",
-  //   "Service Départemental des Domaines",
-  //   "Service Départemental des Affaires Foncières",
-  //   "Service Départemental du Patrimoine de l'État",
-  //   "Service Départemental du Cadastre",
-  //    "Autres services"
-  // ];
-
  // Create the mapping using the actual Service enum
-const serviceMapping: Record<string, Service> = {
-  "Bureau du Courrier": Service.BUREAU_DU_COURRIER,
-  "Recette Départementale des Domaines": Service.RECETTE_DEPARTEMENTALE_DES_DOMAINES,
-  "Conservation Foncière": Service.CONSERVATION_FONCIERE,
-  "Service Départemental des Domaines": Service.SERVICE_DEPARTEMENTAL_DES_DOMAINES,
-  "Service Départemental des Affaires Foncières": Service.SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES,
-  "Service Départemental du Patrimoine de l'État": Service.SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT,
-  "Service Départemental du Cadastre": Service.SERVICE_DEPARTEMENTAL_DU_CADASTRE,
-  "Autres services": Service.AUTRES_SERVICES,
-  "Section Public": Service.SECTION_PUBLIC
+ const serviceMapping = {
+  BUREAU_DU_COURRIER: "Bureau du Courrier",
+  RECETTE_DEPARTEMENTALE_DES_DOMAINES: "Recette Départementale des Domaines",
+  CONSERVATION_FONCIERE: "Conservation Foncière",
+  SERVICE_DEPARTEMENTAL_DES_DOMAINES: "Service Départemental des Domaines",
+  SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES: "Service Départemental des Affaires Foncières",
+  SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT: "Service Départemental du Patrimoine de l'État",
+  SERVICE_DEPARTEMENTAL_DU_CADASTRE: "Service Départemental du Cadastre",
+  AUTRES_SERVICES: "Autres services",
+  SECTION_PUBLIC: "Section public"
 };
 
-// Add a display mapping for human-readable values
-const serviceDisplayNames: Record<Service, string> = {
-  [Service.BUREAU_DU_COURRIER]: "Bureau du Courrier",
-  [Service.RECETTE_DEPARTEMENTALE_DES_DOMAINES]: "Recette Départementale des Domaines",
-  [Service.CONSERVATION_FONCIERE]: "Conservation Foncière",
-  [Service.SERVICE_DEPARTEMENTAL_DES_DOMAINES]: "Service Départemental des Domaines",
-  [Service.SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES]: "Service Départemental des Affaires Foncières",
-  [Service.SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT]: "Service Départemental du Patrimoine de l'État",
-  [Service.SERVICE_DEPARTEMENTAL_DU_CADASTRE]: "Service Départemental du Cadastre",
-  [Service.AUTRES_SERVICES]: "Autres services",
-  [Service.SECTION_PUBLIC]: "Section Public"
-};
 
   const equipmentTypes = [
     'Bureau',
@@ -101,7 +78,7 @@ const serviceDisplayNames: Record<Service, string> = {
     if (!formData.code.trim()) errors.code = 'Code is required';
     if (!formData.name.trim()) errors.name = 'Name is required';
     if (!formData.type) errors.type = 'Type is required';
-    if (!formData.service) errors.department = 'Department is required';
+    if (!formData.service) errors.service = 'Service is required';
     if (!formData.status) errors.status = 'Status is required';
     if (formData.status === 'in-use' && !formData.assignedTo.trim()) {
       errors.assignedTo = 'Assigned user is required when status is in-use';
@@ -348,15 +325,14 @@ const serviceDisplayNames: Record<Service, string> = {
                   name="service"
                   value={formData.service}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.service ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.service ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select service</option>
-                  {Object.entries(serviceDisplayNames).map(([enumValue, displayName]) => (
-                  <option key={enumValue} value={enumValue}>
-                    {displayName}
-                  </option>
+                  {Object.entries(serviceMapping).map(([key, value]) => (
+                    <option key={key} value={key}>
+                      {value}
+                    </option>
                   ))}
                 </select>
                 {formErrors.service && (

@@ -73,7 +73,7 @@ const Login: React.FC = () => {
             </div>
           )}
           <div className="rounded-md shadow-sm -space-y-px space-y-4">
-            <div>
+            <div className='mb-4'>
               <label htmlFor="service" className="sr-only">Service</label>
               <select
                 id="service"
