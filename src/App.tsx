@@ -36,15 +36,14 @@ const AppLayout = () => {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
-      <Route path='/*' 
-      element={
-        <div className="flex flex-col md:flex-row min-h-screen">
-      {isAuthenticated && !isLandingPage && (
-        <div className="md:w-64 flex-shrink-0 min-h-screen">
-          <Sidebar />
-        </div>
-      )}
-      
+
+      <div className="flex flex-col md:flex-row min-h-screen">
+        {isAuthenticated && !isLandingPage && (
+          <div className="md:w-64 flex-shrink-0 min-h-screen">
+            <Sidebar />
+          </div>
+        )}
+
         {isAuthenticated && !isLandingPage && <Header />}
         <main className="flex-1 bg-gray-100 min-h-screen p-3 md:p-6 w-full mt-16">
           <Routes>
@@ -67,10 +66,8 @@ const AppLayout = () => {
           </Routes>
         </main>
       </div>
-      }
-      />
-      </Routes>
-    
+    </Routes>
+
   );
 };
 
