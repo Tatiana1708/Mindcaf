@@ -507,7 +507,7 @@ const EquipmentPage = () => {
               </div>
               <h3 className="mt-3 text-lg font-medium text-gray-900">Ajout réussi!</h3>
               <p className="mt-2 text-sm text-gray-500">
-                L'employé a été ajouté avec succès.
+                L'équipement a été ajouté avec succès.
               </p>
             </div>
           </div>
