@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import logo from '../assets/logo.png';
@@ -38,52 +38,51 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-       {/* <div className="flex items-start space-x-8 p-6">
-      <img
-          src={logo}
-          alt="Drapeau du Cameroun"
-          className="h-20 w-auto"
-        />
-        <img
-          src={sitinfra}
-          alt="Drapeau du Cameroun"
-          className="h-20 w-auto"
-        />
-      </div> */}
-      <div className="max-w-md w-full space-y-8">
-        
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">MINDCAF</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col md:flex-row">
+        {/* Section gauche : Image et description */}
+        <div className="w-full md:w-1/2 bg-blue-700 p-8 flex flex-col justify-center items-center text-white">
+          <div className="flex items-center space-x-4 mb-8">
+            <img src={logo} alt="Logo" className="h-16 w-auto" />
+            <img src={sitinfra} alt="SITINFRA" className="h-16 w-auto" />
+          </div>
+          <h1 className="text-3xl font-bold text-center mb-4">Bienvenue sur MINDCAF</h1>
+          <p className="text-center text-lg">
             Ministère des Domaines, du Cadastre et des Affaires Foncières
           </p>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
+          <p className="text-center text-sm mt-4">
+            Connectez-vous pour accéder à votre espace personnel et gérer vos demandes en ligne.
+          </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
+
+        {/* Section droite : Formulaire de connexion */}
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Connexion</h2>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <div className="flex">
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">{error}</h3>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px space-y-4">
-            <div className='mb-4'>
-              <label htmlFor="service" className="sr-only">Service</label>
+            )}
+
+            {/* Sélection du service */}
+            <div>
+              <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">
+                Service
+              </label>
               <select
                 id="service"
                 name="service"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={service}
                 onChange={(e) => setService(e.target.value)}
               >
-                <option value="">Select a service</option>
+                <option value="">Sélectionnez un service</option>
                 <option value="BUREAU_DU_COURRIER">Bureau du Courrier</option>
                 <option value="RECETTE_DEPARTEMENTALE_DES_DOMAINES">Recette Départementale des Domaines</option>
                 <option value="CONSERVATION_FONCIERE">Conservation Foncière</option>
@@ -94,50 +93,56 @@ const Login: React.FC = () => {
                 <option value="SERVICE_PUBLIC">Service public</option>
               </select>
             </div>
-            <div className="rounded-md shadow-sm space-y-4">
-              <div>
-                <label htmlFor="username" className="sr-only">Username</label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">Password</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
-        </form>
+            {/* Champ Nom d'utilisateur */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                Nom d'utilisateur
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Entrez votre nom d'utilisateur"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+
+            {/* Champ Mot de passe */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Mot de passe
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Entrez votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            {/* Bouton de connexion */}
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Login;
-

@@ -1,53 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
-import type { Equipment } from '../types';
-import { equipmentService } from '../services/equipmentService';
-import { Service } from '@prisma/client';
+import type { Equipment, Service } from '../types';
+import { ref, onValue, remove } from "firebase/database";
+import { db } from '../api/firebaseConfig';
+import { database } from '../api/firebaseConfig';
+import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 
 
 const EquipmentPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [equipmentToDelete, setEquipmentToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    code:'',
+    code: '',
     name: '',
     type: '',
     service: '' as Service,
     status: 'available' as Equipment['status'],
     assignedTo: '',
-    nombre:'',
+    nombre: '',
     dateInstall: '', // ou null si la date n'est pas encore définie
-    etatBien: 'neuf'as Equipment['etatBien']
+    etatBien: 'neuf' as Equipment['etatBien']
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [equipment, setEquipment] = useState<Equipment[]>([]);
 
+  // Add useEffect to fetch data when component mounts
   useEffect(() => {
-    const fetchEquipment = async () => {
-      try {
-        const data = await equipmentService.getAllEquipment();
-        setEquipment(data);
-      } catch (error) {
-        console.error('Failed to fetch equipment:', error);
+    // Reference to the "equipments" node in Realtime Database
+    const equipmentsRef = ref(database, "equipments");
+
+    // Set up a real-time listener
+    const unsubscribe = onValue(equipmentsRef, (snapshot) => {
+      const equipmentsData = snapshot.val();
+      if (equipmentsData) {
+        // Convert the data into an array of equipments
+        const equipmentsList = Object.keys(equipmentsData).map((key) => ({
+          id: key,
+          ...equipmentsData[key],
+        }));
+        setEquipment(equipmentsList);
       }
-    };
-    fetchEquipment();
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
- // Create the mapping using the actual Service enum
- const serviceMapping = {
-  BUREAU_DU_COURRIER: "Bureau du Courrier",
-  RECETTE_DEPARTEMENTALE_DES_DOMAINES: "Recette Départementale des Domaines",
-  CONSERVATION_FONCIERE: "Conservation Foncière",
-  SERVICE_DEPARTEMENTAL_DES_DOMAINES: "Service Départemental des Domaines",
-  SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES: "Service Départemental des Affaires Foncières",
-  SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT: "Service Départemental du Patrimoine de l'État",
-  SERVICE_DEPARTEMENTAL_DU_CADASTRE: "Service Départemental du Cadastre",
-  AUTRES_SERVICES: "Autres services",
-  SECTION_PUBLIC: "Section public"
-};
-
+  // Create the mapping using the actual Service enum
+  const serviceMapping = {
+    BUREAU_DU_COURRIER: "Bureau du Courrier",
+    RECETTE_DEPARTEMENTALE_DES_DOMAINES: "Recette Départementale des Domaines",
+    CONSERVATION_FONCIERE: "Conservation Foncière",
+    SERVICE_DEPARTEMENTAL_DES_DOMAINES: "Service Départemental des Domaines",
+    SERVICE_DEPARTEMENTAL_DES_AFFAIRES_FONCIERES: "Service Départemental des Affaires Foncières",
+    SERVICE_DEPARTEMENTAL_DU_PATRIMOINE_DE_L_ETAT: "Service Départemental du Patrimoine de l'État",
+    SERVICE_DEPARTEMENTAL_DU_CADASTRE: "Service Départemental du Cadastre",
+    AUTRES_SERVICES: "Autres services",
+    SECTION_PUBLIC: "Section public"
+  };
 
   const equipmentTypes = [
     'Bureau',
@@ -92,42 +105,78 @@ const EquipmentPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors = validateForm();
-    
+
     if (Object.keys(errors).length === 0) {
-      try {
-        const newEquipment = await equipmentService.createEquipment(formData);
-        setEquipment([...equipment, newEquipment]);
-        setFormData({
-          code:'',
-          name: '',
-          type: '',
-          service: '' as Service,
-          status: 'available',
-          assignedTo: '',
-          nombre: '',
-          dateInstall: '', 
-          etatBien: 'neuf'
-        });
-        setShowAddModal(false);
-      } catch (error) {
-        console.error('Failed to create equipment:', error);
-        setFormErrors({ submit: 'Failed to create equipment. Please try again.' });
-      }
+      const docRef = await addDoc(collection(db, 'equipments'), formData);
+      const newEquipment = {
+        id: docRef.id,
+        ...formData
+      };
+
+      setEquipment([...equipment, newEquipment]);
+      setFormData({
+        code: '',
+        name: '',
+        type: '',
+        service: '' as Service,
+        status: 'available',
+        assignedTo: '',
+        nombre: '',
+        dateInstall: '',
+        etatBien: 'neuf'
+      });
+
+      // Close the form modal and show success modal
+      setShowAddModal(false);
+      // Show success modal with a slight delay
+      setTimeout(() => {
+        setShowSuccessModal(true);
+      }, 100);
+
+      // Automatically close success modal after 3 seconds
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 3000);
     } else {
+      console.error('Failed to create equipment:', errors);
       setFormErrors(errors);
+    }
+  };
+
+  // Add delete function
+  const handleDelete = async (id: string) => {
+    try {
+      // Reference to the specific equipment node in Realtime Database
+      const equipmentRef = ref(database, `equipments/${id}`);
+
+      // Delete the equipment node
+      await remove(equipmentRef);
+      setShowDeleteModal(true);
+
+      // Update the local state to remove the deleted equipment
+      setEquipment((prevEquipments) =>
+        prevEquipments.filter((equipment) => equipment.id !== id)
+      );
+    } catch (error) {
+      console.error("Error deleting equipment:", error);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (equipmentToDelete) {
+      try {
+        await deleteDoc(doc(db, 'equipments', equipmentToDelete));
+        setEquipment(equipment.filter(item => item.id !== equipmentToDelete));
+        setShowDeleteModal(false);
+        setEquipmentToDelete(null);
+      } catch (error) {
+        console.error('Error deleting equipment:', error);
+      }
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === 'service') {
-      // Convert display name to enum value
-      const enumValue = serviceMapping[value as keyof typeof serviceMapping];
-      setFormData(prev => ({
-        ...prev,
-        [name]: enumValue // Store the enum value, not the display name
-      }));
-    } 
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
     if (formErrors[name]) {
@@ -146,7 +195,7 @@ const EquipmentPage = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Equipment</h1>
-        <button 
+        <button
           onClick={() => setShowAddModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
         >
@@ -193,14 +242,14 @@ const EquipmentPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{item.type}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.service}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.assignedTo}</td>
-                   <td className="px-6 py-4 whitespace-nowrap">{item.nombre}</td>
-                   <td className="px-6 py-4 whitespace-nowrap">{item.dateInstall}</td>
-                   <td className="px-6 py-4 whitespace-nowrap">{item.etatBien}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.nombre}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.dateInstall}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.etatBien}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${item.status === 'available' ? 'bg-green-100 text-green-800' : 
-                        item.status === 'in-use' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-yellow-100 text-yellow-800'}`}>
+                      ${item.status === 'available' ? 'bg-green-100 text-green-800' :
+                        item.status === 'in-use' ? 'bg-blue-100 text-blue-800' :
+                          'bg-yellow-100 text-yellow-800'}`}>
                       {item.status}
                     </span>
                   </td>
@@ -209,7 +258,9 @@ const EquipmentPage = () => {
                       <button className="text-blue-600 hover:text-blue-800">
                         <Edit size={18} />
                       </button>
-                      <button className="text-red-600 hover:text-red-800">
+                      <button className="text-red-600 hover:text-red-800"
+                        // onClick={() => handleDelete(equipment.id)}
+                      >
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -227,7 +278,7 @@ const EquipmentPage = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md overflow-y-auto my-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Ajouter un équipement</h2>
-              <button 
+              <button
                 onClick={() => setShowAddModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -245,9 +296,8 @@ const EquipmentPage = () => {
                   name="code"
                   value={formData.code}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.code ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.code ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter equipment code"
                 />
                 {formErrors.code && (
@@ -264,9 +314,8 @@ const EquipmentPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.name ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter equipment name"
                 />
                 {formErrors.name && (
@@ -282,9 +331,8 @@ const EquipmentPage = () => {
                   name="type"
                   value={formData.type}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.type ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.type ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select type</option>
                   {equipmentTypes.map(type => (
@@ -296,27 +344,6 @@ const EquipmentPage = () => {
                 )}
               </div>
 
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Service
-                </label>
-                <select
-                  name="service"
-                  value={formData.service}
-                  onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.service ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">Select service</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-                {formErrors.service && (
-                  <p className="text-red-500 text-sm mt-1">{formErrors.service}</p>
-                )}
-              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Service
@@ -348,9 +375,8 @@ const EquipmentPage = () => {
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.status ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.status ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select status</option>
                   <option value="in-use">En Service</option>
@@ -372,9 +398,8 @@ const EquipmentPage = () => {
                     name="assignedTo"
                     value={formData.assignedTo}
                     onChange={handleInputChange}
-                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                      formErrors.assignedTo ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.assignedTo ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Enter user name"
                   />
                   {formErrors.assignedTo && (
@@ -392,9 +417,8 @@ const EquipmentPage = () => {
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.nombre ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.nombre ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter equipment nombre"
                 />
                 {formErrors.nombre && (
@@ -411,9 +435,8 @@ const EquipmentPage = () => {
                   name="dateInstall"
                   value={formData.dateInstall}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.dateInstall ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.dateInstall ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter equipment date installation"
                 />
                 {formErrors.dateInstall && (
@@ -423,15 +446,14 @@ const EquipmentPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                Etat des biens
+                  Etat des biens
                 </label>
                 <select
                   name="etatBien"
                   value={formData.etatBien}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.etatBien ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formErrors.etatBien ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select etat des biens</option>
                   <option value="available">Neuf</option>
@@ -462,6 +484,67 @@ const EquipmentPage = () => {
           </div>
         </div>
       )}
+
+      {/* Add this success modal component just before the closing div of your return statement*/}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg
+                  className="h-6 w-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="mt-3 text-lg font-medium text-gray-900">Ajout réussi!</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                L'employé a été ajouté avec succès.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add this delete confirmation modal just before the closing div of your return statement*/}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Confirm Deletion</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Are you sure you want to delete this equipment? This action cannot be undone.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

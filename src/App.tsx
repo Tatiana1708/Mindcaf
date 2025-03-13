@@ -16,10 +16,11 @@ import PublicProcedureDetails from './pages/public/PublicProcedDetails';
 import { Header } from './components/Header';
 import PublicRequesterInfo from './pages/public/PublicRequesterInfo';
 // import PublicChecklistForm from './pages/public/PublicChecklistForm';
-import Register from './pages/Register';
+// import Register from './pages/Register';
 import React from 'react';
 import PublicDashboard from './pages/public/PublicDashboard';
 import PublicChecklistForm from './pages/public/PublicChecklistForm';
+import PublicSocietyInfo from './pages/public/PublicSocietyInfo';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -32,7 +33,12 @@ const AppLayout = () => {
   const isLandingPage = location.pathname === '/';
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path='/*' 
+      element={
+        <div className="flex flex-col md:flex-row min-h-screen">
       {isAuthenticated && !isLandingPage && (
         <div className="md:w-64 flex-shrink-0 min-h-screen">
           <Sidebar />
@@ -42,9 +48,7 @@ const AppLayout = () => {
         {isAuthenticated && !isLandingPage && <Header />}
         <main className="flex-1 bg-gray-100 min-h-screen p-3 md:p-6 w-full mt-16">
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            {/* <Route path="/register" element={<Register />} /> */}
             <Route path="/services" element={<Departments />} />
             <Route path="/services" element={<PrivateRoute><Departments /></PrivateRoute>} />
             <Route path="/serviceView" element={<PrivateRoute><ServicesView /></PrivateRoute>} />
@@ -56,12 +60,16 @@ const AppLayout = () => {
             <Route path="/checklist" element={<ChecklistForm />} />
             <Route path="/public-service" element={<PublicProcedures />} />
             <Route path="/public-procedure/:procedureName" element={<PublicProcedureDetails />} />
-            <Route path="/public-requester-info" element={<PublicRequesterInfo />} />
+            <Route path="/public-personne-info" element={<PublicRequesterInfo />} />
             <Route path="/public-checklist" element={<PublicChecklistForm />} />
             <Route path="/public-dashboard" element={<PublicDashboard />} />
+            <Route path="/public-society-info" element={<PublicSocietyInfo />} />
           </Routes>
         </main>
       </div>
+      }
+      />
+      </Routes>
     
   );
 };

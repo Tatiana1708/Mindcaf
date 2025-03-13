@@ -17,6 +17,7 @@
     "@mui/material": "^6.4.1",
     "@prisma/client": "^6.3.0",
     "@shadcn/ui": "^0.0.4",
+    "@supabase/supabase-js": "^2.49.1",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",

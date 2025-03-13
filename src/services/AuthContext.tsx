@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { authService } from './authService';
+// import { authService } from './authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const now = new Date().getTime();
       if (now < parseInt(tokenExpiration)) {
         try {
-          authService.verifyToken(token);
+          // authService.verifyToken(token);
           setIsAuthenticated(true);
           setUser(JSON.parse(storedUser));
         } catch (err) {

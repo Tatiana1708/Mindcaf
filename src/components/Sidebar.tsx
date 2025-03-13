@@ -18,7 +18,9 @@ const Sidebar = () => {
   const { user } = useAuth();
 
   const menuItems = user?.role === 'public' ? [
-    { icon: FileText, label: 'Public Procedures', path: '/public-procedures' }
+    { icon: FileText, label: 'Public Procedures', path: '/public-service' },
+    { icon: FileText, label: 'Personne physique', path: 'public-society-info' },
+    { icon: FileText, label: 'Personne moral', path: 'public-personne-info' }
   ] : [
     { icon: Building2, label: 'Services', path: '/services' },
     { icon: Users, label: 'Employees', path: '/employees' },
