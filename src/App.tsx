@@ -36,7 +36,9 @@ const AppLayout = () => {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
-
+      <Route
+          path="/*" // This will match any route after "/" and allow for nested routes
+          element={
       <div className="flex flex-col md:flex-row min-h-screen">
         {isAuthenticated && !isLandingPage && (
           <div className="md:w-64 flex-shrink-0 min-h-screen">
@@ -66,6 +68,8 @@ const AppLayout = () => {
           </Routes>
         </main>
       </div>
+      }
+      />
     </Routes>
 
   );
